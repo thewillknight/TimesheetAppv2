@@ -1,9 +1,11 @@
 package com.example.timesheetapp.data.model
+import com.google.firebase.Timestamp
+
 
 data class Timesheet(
     val userId: String = "",
     val weekStart: String = "",  // keep as ISO string in ViewModel/UI
     val status: String = "draft",
-    val submittedAt: String? = null,
-    val approvedAt: String? = null
+    val submittedAt: Timestamp? = null,
+    val approvedAt: Timestamp? = null
 )

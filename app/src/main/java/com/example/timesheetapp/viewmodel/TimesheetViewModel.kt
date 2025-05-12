@@ -141,5 +141,23 @@ class TimesheetViewModel : ViewModel() {
         return latest.plusWeeks(1).toString()
     }
 
+    fun submitTimesheet(weekStart: String) {
+        val userId = auth.currentUser?.uid ?: return
+        val update = mapOf(
+            "status" to "pending",
+            "submittedAt" to com.google.firebase.Timestamp.now()
+        )
+
+        db.collection("timesheets")
+            .document(userId)
+            .collection("records")
+            .document(weekStart)
+            .update(update)
+            .addOnSuccessListener {
+                loadTimesheets()
+            }
+    }
+
+
 
 }

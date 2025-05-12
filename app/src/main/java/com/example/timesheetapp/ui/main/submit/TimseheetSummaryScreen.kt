@@ -15,7 +15,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.timesheetapp.data.model.TimesheetEntry
 import com.example.timesheetapp.viewmodel.TimesheetViewModel
-import java.util.Locale
+import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,6 +31,7 @@ fun TimesheetSummaryScreen(
     val isDraft = timesheet?.status?.lowercase(Locale.ROOT) == "draft"
 
     var showBottomSheet by remember { mutableStateOf(false) }
+    var selectedEntry by remember { mutableStateOf<TimesheetEntry?>(null) }
 
     LaunchedEffect(weekStart) {
         viewModel.loadEntries(weekStart)
@@ -41,24 +42,28 @@ fun TimesheetSummaryScreen(
         ModalBottomSheet(
             onDismissRequest = {
                 showBottomSheet = false
+                selectedEntry = null
                 viewModel.loadEntries(weekStart)
             }
         ) {
             EntryDetailBottomSheet(
                 weekStart = weekStart,
+                existingEntry = selectedEntry,
+                isEditable = isDraft,
                 onDismiss = {
                     showBottomSheet = false
+                    selectedEntry = null
                 }
             )
         }
     }
-
 
     Scaffold(
         modifier = Modifier,
         floatingActionButton = {
             if (isDraft) {
                 FloatingActionButton(onClick = {
+                    selectedEntry = null
                     showBottomSheet = true
                 }) {
                     Icon(Icons.Default.Add, contentDescription = "Add Entry")
@@ -69,14 +74,13 @@ fun TimesheetSummaryScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
             Text("Week: $weekStart", style = MaterialTheme.typography.titleLarge)
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "Status: ${timesheet?.status?.capitalize(Locale.ROOT) ?: "Unknown"}",
+                text = "Status: ${timesheet?.status?.replaceFirstChar { it.titlecase(Locale.getDefault()) } ?: "Unknown"}",
                 color = when (timesheet?.status?.lowercase(Locale.ROOT)) {
                     "draft" -> Color.Red
                     "pending" -> Color(0xFFFFA000)
@@ -84,6 +88,26 @@ fun TimesheetSummaryScreen(
                     else -> Color.Gray
                 }
             )
+
+            val totalHours = entries.sumOf { it.dailyHours.sum() }
+
+            Text(
+                text = "Total Hours: ${"%.1f".format(totalHours)}",
+                style = MaterialTheme.typography.bodyMedium
+            )
+
+            if (isDraft && entries.isNotEmpty() && totalHours >= 37.5) {
+                Button(
+                    onClick = {
+                        viewModel.submitTimesheet(weekStart)
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Submit Timesheet")
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -96,7 +120,8 @@ fun TimesheetSummaryScreen(
                 LazyColumn {
                     items(entries) { entry ->
                         EntrySummaryItem(entry = entry) {
-                            // Optional: implement edit bottom sheet
+                            selectedEntry = entry
+                            showBottomSheet = true
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                     }

@@ -55,7 +55,6 @@ fun SubmitScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
             Text("Your Timesheets", style = MaterialTheme.typography.titleLarge)

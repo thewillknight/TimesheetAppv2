@@ -3,168 +3,97 @@ package com.example.timesheetapp.ui.main.submit
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.timesheetapp.data.model.Project
-import com.example.timesheetapp.data.model.Subcategory
 import com.example.timesheetapp.data.model.TimesheetEntry
-import com.example.timesheetapp.viewmodel.ProjectViewModel
-import com.example.timesheetapp.viewmodel.SubcategoryViewModel
 import com.example.timesheetapp.viewmodel.TimesheetViewModel
+import java.util.*
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EntryDetailBottomSheet(
     weekStart: String,
     existingEntry: TimesheetEntry? = null,
-    onDismiss: () -> Unit
+    isEditable: Boolean = true,
+    onDismiss: () -> Unit,
+    viewModel: TimesheetViewModel = viewModel()
 ) {
+    var projectId by remember { mutableStateOf(existingEntry?.projectId ?: "") }
+    var subcategoryId by remember { mutableStateOf(existingEntry?.subcategoryId ?: "") }
+    var dailyHours by remember { mutableStateOf(existingEntry?.dailyHours ?: List(7) { 0.0 }) }
+
+    val daysOfWeek = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .defaultMinSize(minHeight = 500.dp) // force taller sheet
+            .defaultMinSize(minHeight = 500.dp)
             .padding(16.dp)
             .verticalScroll(rememberScrollState())
     ) {
-        val timesheetViewModel: TimesheetViewModel = viewModel()
-        val projectViewModel: ProjectViewModel = viewModel()
-        val subcategoryViewModel: SubcategoryViewModel = viewModel()
+        Text(
+            text = if (existingEntry != null) "Edit Entry" else "New Entry",
+            style = MaterialTheme.typography.titleMedium
+        )
 
-        val projects by projectViewModel.projects.collectAsState()
-        val subcategories by subcategoryViewModel.subcategories.collectAsState()
+        Spacer(modifier = Modifier.height(16.dp))
 
-        var selectedProjectId by remember { mutableStateOf(existingEntry?.projectId ?: "") }
-        var selectedSubcategoryId by remember { mutableStateOf(existingEntry?.subcategoryId ?: "") }
-        var dailyHours by remember { mutableStateOf(existingEntry?.dailyHours ?: List(7) { 0.0 }) }
+        OutlinedTextField(
+            value = projectId,
+            onValueChange = { projectId = it },
+            label = { Text("Project ID") },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = isEditable
+        )
 
-        val dayLabels = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+        Spacer(modifier = Modifier.height(8.dp))
 
-        LaunchedEffect(Unit) {
-            projectViewModel.loadProjects()
-            subcategoryViewModel.loadSubcategories()
+        OutlinedTextField(
+            value = subcategoryId,
+            onValueChange = { subcategoryId = it },
+            label = { Text("Subcategory ID") },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = isEditable
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text("Hours per day", style = MaterialTheme.typography.titleSmall)
+        Spacer(modifier = Modifier.height(8.dp))
+
+        daysOfWeek.forEachIndexed { index, day ->
+            Text("$day: ${dailyHours[index]} hrs")
+            Slider(
+                value = dailyHours[index].toFloat(),
+                onValueChange = { newValue ->
+                    val clamped = newValue.coerceIn(0f, 12f)
+                    dailyHours = dailyHours.toMutableList().also { it[index] = clamped.toDouble() }
+                },
+                enabled = isEditable,
+                valueRange = 0f..12f,
+                steps = 23 // 0.5 hour increments (24 values = 23 steps)
+            )
+            Spacer(modifier = Modifier.height(4.dp))
         }
 
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text("Timesheet Entry", style = MaterialTheme.typography.titleLarge)
-                IconButton(onClick = onDismiss) {
-                    Icon(Icons.Default.Close, contentDescription = "Close")
-                }
-            }
+        Spacer(modifier = Modifier.height(16.dp))
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Project Dropdown
-            var expandedProject by remember { mutableStateOf(false) }
-            ExposedDropdownMenuBox(
-                expanded = expandedProject,
-                onExpandedChange = { expandedProject = !expandedProject }
-            ) {
-                OutlinedTextField(
-                    value = selectedProjectId,
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("Project") },
-                    modifier = Modifier.menuAnchor().fillMaxWidth()
-                )
-                ExposedDropdownMenu(
-                    expanded = expandedProject,
-                    onDismissRequest = { expandedProject = false }
-                ) {
-                    projects.forEach { project ->
-                        DropdownMenuItem(
-                            text = { Text("${project.id} - ${project.name}") },
-                            onClick = {
-                                selectedProjectId = project.id
-                                expandedProject = false
-                            }
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Subcategory Dropdown
-            var expandedSubcategory by remember { mutableStateOf(false) }
-            ExposedDropdownMenuBox(
-                expanded = expandedSubcategory,
-                onExpandedChange = { expandedSubcategory = !expandedSubcategory }
-            ) {
-                OutlinedTextField(
-                    value = selectedSubcategoryId,
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("Subcategory") },
-                    modifier = Modifier.menuAnchor().fillMaxWidth()
-                )
-                ExposedDropdownMenu(
-                    expanded = expandedSubcategory,
-                    onDismissRequest = { expandedSubcategory = false }
-                ) {
-                    subcategories.forEach { sub ->
-                        DropdownMenuItem(
-                            text = { Text("${sub.code} - ${sub.description}") },
-                            onClick = {
-                                selectedSubcategoryId = sub.code
-                                expandedSubcategory = false
-                            }
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text("Hours Per Day", style = MaterialTheme.typography.titleMedium)
-
-            dayLabels.forEachIndexed { index, day ->
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("$day: ${"%.1f".format(dailyHours[index])} hrs")
-                    }
-
-                    Slider(
-                        value = dailyHours[index].toFloat(),
-                        onValueChange = { newValue ->
-                            dailyHours =
-                                dailyHours.toMutableList().also { it[index] = newValue.toDouble() }
-                        },
-                        valueRange = 0f..12f,
-                        steps = 23
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
+        if (isEditable) {
             Button(
                 onClick = {
-                    val newEntry = TimesheetEntry(
-                        id = existingEntry?.id ?: "",
-                        projectId = selectedProjectId,
-                        subcategoryId = selectedSubcategoryId,
-                        dailyHours = dailyHours
+                    val entry = TimesheetEntry(
+                        id = existingEntry?.id ?: "", // new or existing
+                        projectId = projectId,
+                        subcategoryId = subcategoryId,
+                        dailyHours = dailyHours,
+                        approved = existingEntry?.approved ?: false,
+                        approvedBy = existingEntry?.approvedBy
                     )
-                    timesheetViewModel.addOrUpdateEntry(weekStart, newEntry)
+                    viewModel.addOrUpdateEntry(weekStart, entry)
                     onDismiss()
                 },
-                enabled = selectedProjectId.isNotBlank() && selectedSubcategoryId.isNotBlank(),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Save Entry")
