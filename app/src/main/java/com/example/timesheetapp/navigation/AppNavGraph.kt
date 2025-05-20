@@ -7,6 +7,8 @@ import androidx.navigation.compose.composable
 import com.example.timesheetapp.ui.auth.LoginScreen
 import com.example.timesheetapp.ui.auth.SignUpScreen
 import com.example.timesheetapp.ui.main.MainScreen
+import com.example.timesheetapp.ui.main.approve.ApproveSummaryScreen
+import com.example.timesheetapp.ui.main.approve.SubmitterTimesheetsScreen
 import com.example.timesheetapp.ui.main.submit.TimesheetSummaryScreen
 
 sealed class Screen(val route: String) {
@@ -27,6 +29,20 @@ fun AppNavGraph(navController: NavHostController) {
         }
         composable(Screen.Main.route) {
             MainScreen(navController)
+        }
+       // composable("approveTimesheets/{submitterId}") { backStackEntry ->
+       //     val submitterId = backStackEntry.arguments?.getString("submitterId") ?: return@composable
+       //     SubmitterTimesheetsScreen(submitterId, navController)
+       // }
+        composable("submitterTimesheets/{submitterId}/{submitterName}") { backStackEntry ->
+            val submitterId = backStackEntry.arguments?.getString("submitterId") ?: return@composable
+            val submitterName = backStackEntry.arguments?.getString("submitterName") ?: "Unknown"
+            SubmitterTimesheetsScreen(navController, submitterId, submitterName)
+        }
+        composable("approveSummary/{submitterId}/{weekStart}") { backStackEntry ->
+            val submitterId = backStackEntry.arguments?.getString("submitterId") ?: return@composable
+            val weekStart = backStackEntry.arguments?.getString("weekStart") ?: return@composable
+            ApproveSummaryScreen(submitterId = submitterId, weekStart = weekStart)
         }
     }
 }

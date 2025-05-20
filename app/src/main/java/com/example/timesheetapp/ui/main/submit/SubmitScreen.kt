@@ -79,9 +79,15 @@ fun SubmitScreen(
 fun TimesheetListItem(timesheet: Timesheet, onClick: () -> Unit) {
     val statusColor = when (timesheet.status.lowercase(Locale.getDefault())) {
         "draft" -> Color(0xFFFFCDD2)
+        "rejected" -> Color(0xFFFFCDD2)
         "pending" -> Color(0xFFFFF9C4)
         "approved" -> Color(0xFFC8E6C9)
         else -> Color.LightGray
+    }
+
+    val statusText = when (timesheet.status.lowercase()) {
+        "rejected" -> "Rejected – please revise and resubmit"
+        else -> timesheet.status.replaceFirstChar { it.uppercaseChar() }
     }
 
     Card(
@@ -92,14 +98,13 @@ fun TimesheetListItem(timesheet: Timesheet, onClick: () -> Unit) {
         Row(
             modifier = Modifier
                 .background(statusColor)
+                .fillMaxWidth()
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
                 Text("Week: ${timesheet.weekStart}", style = MaterialTheme.typography.bodyLarge)
-                Text("Status: ${timesheet.status.replaceFirstChar {
-                    if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
-                }}")
+                Text("Status: $statusText")
             }
         }
     }

@@ -1,7 +1,10 @@
 package com.example.timesheetapp.viewmodel
 
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.timesheetapp.data.model.Project
+import com.example.timesheetapp.data.model.Subcategory
 import com.example.timesheetapp.data.model.Timesheet
 import com.example.timesheetapp.data.model.TimesheetEntry
 import com.google.firebase.auth.FirebaseAuth
@@ -157,6 +160,32 @@ class TimesheetViewModel : ViewModel() {
                 loadTimesheets()
             }
     }
+
+    private val _projects = MutableStateFlow<List<Project>>(emptyList())
+    val projects: StateFlow<List<Project>> = _projects
+
+    private val _subcategories = MutableStateFlow<List<Subcategory>>(emptyList())
+    val subcategories: StateFlow<List<Subcategory>> = _subcategories
+
+    val projectMap = mutableStateOf<Map<String, Project>>(emptyMap())
+    val subcategoryMap = mutableStateOf<Map<String, Subcategory>>(emptyMap())
+
+    fun loadProjects() {
+        db.collection("projects").get().addOnSuccessListener { snapshot ->
+            val list = snapshot.documents.mapNotNull { it.toObject(Project::class.java) }
+            _projects.value = list
+            projectMap.value = list.associateBy { it.id }
+        }
+    }
+
+    fun loadSubcategories() {
+        db.collection("subcategories").get().addOnSuccessListener { snapshot ->
+            val list = snapshot.documents.mapNotNull { it.toObject(Subcategory::class.java) }
+            _subcategories.value = list
+            subcategoryMap.value = list.associateBy { it.code }
+        }
+    }
+
 
 
 

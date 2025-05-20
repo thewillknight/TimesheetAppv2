@@ -20,8 +20,10 @@ import com.google.firebase.auth.FirebaseAuth
 import com.example.timesheetapp.navigation.BottomNavItem
 import com.example.timesheetapp.ui.main.admin.AdminScreen
 import com.example.timesheetapp.ui.main.approve.ApproveScreen
+import com.example.timesheetapp.ui.main.approve.SubmitterTimesheetsScreen
 import com.example.timesheetapp.ui.main.submit.SubmitScreen
 import com.example.timesheetapp.ui.main.submit.TimesheetSummaryScreen
+import com.example.timesheetapp.ui.main.approve.ApproveSummaryScreen
 import com.example.timesheetapp.viewmodel.UserViewModel
 import java.util.Locale
 
@@ -47,12 +49,7 @@ fun MainScreen(navController: NavController, userViewModel: UserViewModel = view
 
     Scaffold(
         topBar = {
-            AppTopBar(title = currentRoute?.replaceFirstChar {
-                if (it.isLowerCase()) it.titlecase(
-                    Locale.getDefault()
-                ) else it.toString()
-            }
-                ?: "Timesheet", navController = navController)
+            AppTopBar(currentRoute = currentRoute, navController = navController)
         },
         bottomBar = {
             NavigationBar {
@@ -75,12 +72,23 @@ fun MainScreen(navController: NavController, userViewModel: UserViewModel = view
     ) { padding ->
         NavHost(navController = navHostController, startDestination = "submit", Modifier.padding(padding)) {
             composable("submit") { SubmitScreen(navController = navHostController) }
-            composable("approve") { ApproveScreen(navController) }
+            composable("approve") { ApproveScreen(navHostController) }
             composable("admin") { AdminScreen(navController) }
             composable("timesheetSummary/{weekStart}") { backStackEntry ->
                 val weekStart = backStackEntry.arguments?.getString("weekStart") ?: return@composable
                 TimesheetSummaryScreen(weekStart = weekStart, navController = navHostController)
             }
+            composable("submitterTimesheets/{submitterId}/{name}") { backStackEntry ->
+                val submitterId = backStackEntry.arguments?.getString("submitterId") ?: return@composable
+                val name = backStackEntry.arguments?.getString("name") ?: "Unknown"
+                SubmitterTimesheetsScreen(submitterId = submitterId, submitterName = name, navController = navHostController)
+            }
+            composable("approveSummary/{submitterId}/{weekStart}") { backStackEntry ->
+                val submitterId = backStackEntry.arguments?.getString("submitterId") ?: return@composable
+                val weekStart = backStackEntry.arguments?.getString("weekStart") ?: return@composable
+                ApproveSummaryScreen(submitterId = submitterId, weekStart = weekStart)
+            }
         }
     }
 }
+

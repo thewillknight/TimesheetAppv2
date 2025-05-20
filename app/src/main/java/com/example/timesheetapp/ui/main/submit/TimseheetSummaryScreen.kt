@@ -15,6 +15,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.timesheetapp.data.model.TimesheetEntry
 import com.example.timesheetapp.viewmodel.TimesheetViewModel
+import kotlinx.coroutines.launch
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -26,16 +27,33 @@ fun TimesheetSummaryScreen(
 ) {
     val entries by viewModel.entries.collectAsState()
     val timesheets by viewModel.timesheets.collectAsState()
+    val projects by viewModel.projects.collectAsState()
+    val subcategories by viewModel.subcategories.collectAsState()
 
-    val timesheet = timesheets.find { it.weekStart == weekStart }
-    val isDraft = timesheet?.status?.lowercase(Locale.ROOT) == "draft"
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+
+    val projectMap = remember(projects) { projects.associateBy { it.id } }
+    val subcategoryMap = remember(subcategories) { subcategories.associateBy { it.code } }
+
+    val timesheet = remember(timesheets, weekStart) {
+        timesheets.find { it.weekStart == weekStart }
+    }
+
+    val isEditable = remember(timesheet) {
+        timesheet?.status?.lowercase(Locale.ROOT) in listOf("draft", "rejected")
+    }
+
+    val totalHours = entries.sumOf { it.dailyHours.sum() }
 
     var showBottomSheet by remember { mutableStateOf(false) }
     var selectedEntry by remember { mutableStateOf<TimesheetEntry?>(null) }
 
     LaunchedEffect(weekStart) {
-        viewModel.loadEntries(weekStart)
         viewModel.loadTimesheets()
+        viewModel.loadEntries(weekStart)
+        viewModel.loadProjects()
+        viewModel.loadSubcategories()
     }
 
     if (showBottomSheet) {
@@ -43,13 +61,12 @@ fun TimesheetSummaryScreen(
             onDismissRequest = {
                 showBottomSheet = false
                 selectedEntry = null
-                viewModel.loadEntries(weekStart)
             }
         ) {
             EntryDetailBottomSheet(
                 weekStart = weekStart,
                 existingEntry = selectedEntry,
-                isEditable = isDraft,
+                isEditable = isEditable,
                 onDismiss = {
                     showBottomSheet = false
                     selectedEntry = null
@@ -59,9 +76,9 @@ fun TimesheetSummaryScreen(
     }
 
     Scaffold(
-        modifier = Modifier,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
-            if (isDraft) {
+            if (isEditable) {
                 FloatingActionButton(onClick = {
                     selectedEntry = null
                     showBottomSheet = true
@@ -79,36 +96,21 @@ fun TimesheetSummaryScreen(
             Text("Week: $weekStart", style = MaterialTheme.typography.titleLarge)
             Spacer(modifier = Modifier.height(4.dp))
 
-            Text(
-                text = "Status: ${timesheet?.status?.replaceFirstChar { it.titlecase(Locale.getDefault()) } ?: "Unknown"}",
-                color = when (timesheet?.status?.lowercase(Locale.ROOT)) {
-                    "draft" -> Color.Red
-                    "pending" -> Color(0xFFFFA000)
-                    "approved" -> Color(0xFF388E3C)
-                    else -> Color.Gray
-                }
-            )
+            val statusDisplay = timesheet?.status?.replaceFirstChar {
+                if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
+            } ?: "Loading..."
 
-            val totalHours = entries.sumOf { it.dailyHours.sum() }
-
-            Text(
-                text = "Total Hours: ${"%.1f".format(totalHours)}",
-                style = MaterialTheme.typography.bodyMedium
-            )
-
-            if (isDraft && entries.isNotEmpty() && totalHours >= 37.5) {
-                Button(
-                    onClick = {
-                        viewModel.submitTimesheet(weekStart)
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Submit Timesheet")
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
+            val statusColor = when (timesheet?.status?.lowercase(Locale.ROOT)) {
+                "draft", "rejected" -> Color.Red
+                "pending" -> Color(0xFFFFA000)
+                "approved" -> Color(0xFF388E3C)
+                else -> Color.Gray
             }
 
+            Text("Status: $statusDisplay", color = statusColor)
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text("Total Hours: $totalHours", style = MaterialTheme.typography.bodyMedium)
             Spacer(modifier = Modifier.height(16.dp))
 
             Text("Entries", style = MaterialTheme.typography.titleMedium)
@@ -119,7 +121,12 @@ fun TimesheetSummaryScreen(
             } else {
                 LazyColumn {
                     items(entries) { entry ->
-                        EntrySummaryItem(entry = entry) {
+                        EntrySummaryItem(
+                            entry = entry,
+                            isEditable = isEditable || !isEditable, // allow all to view
+                            projectName = projectMap[entry.projectId]?.name,
+                            subcategoryDesc = subcategoryMap[entry.subcategoryId]?.description
+                        ) {
                             selectedEntry = entry
                             showBottomSheet = true
                         }
@@ -127,22 +134,44 @@ fun TimesheetSummaryScreen(
                     }
                 }
             }
+
+            if (isEditable) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = {
+                        viewModel.submitTimesheet(weekStart)
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar("Timesheet submitted for approval")
+                        }
+                    },
+                    enabled = totalHours >= 37.5,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Submit Timesheet")
+                }
+            }
         }
     }
 }
 
 @Composable
-fun EntrySummaryItem(entry: TimesheetEntry, onClick: () -> Unit) {
+fun EntrySummaryItem(
+    entry: TimesheetEntry,
+    isEditable: Boolean,
+    projectName: String?,
+    subcategoryDesc: String?,
+    onClick: () -> Unit
+) {
     val totalHours = entry.dailyHours.sum()
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() }
+            .clickable(enabled = isEditable || !isEditable, onClick = onClick)
     ) {
         Column(Modifier.padding(16.dp)) {
-            Text("Project: ${entry.projectId}")
-            Text("Subcategory: ${entry.subcategoryId}")
+            Text("Project: ${entry.projectId} - ${projectName ?: "Unknown"}")
+            Text("Subcategory: ${entry.subcategoryId} - ${subcategoryDesc ?: "Unknown"}")
             Text("Total Hours: $totalHours")
             Text("Approved: ${if (entry.approved) "✅" else "❌"}")
         }
