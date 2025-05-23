@@ -44,6 +44,35 @@ fun ApproveSummaryScreen(
             Text("Total Hours: $totalHours")
             Spacer(modifier = Modifier.height(16.dp))
 
+            if (allApproved) {
+                Button(
+                    onClick = {
+                        viewModel.approveTimesheet(submitterId, weekStart)
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar("Timesheet approved")
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Approve Full Timesheet")
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+            } else if (anyUnapproved) {
+                Button(
+                    onClick = {
+                        viewModel.rejectTimesheet(submitterId, weekStart)
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar("Timesheet rejected")
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Reject Timesheet")
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+
             LazyColumn {
                 items(entries) { entry ->
                     Card(
@@ -73,35 +102,7 @@ fun ApproveSummaryScreen(
                     }
                 }
             }
-
             Spacer(modifier = Modifier.height(16.dp))
-
-            if (allApproved) {
-                Button(
-                    onClick = {
-                        viewModel.approveTimesheet(submitterId, weekStart)
-                        coroutineScope.launch {
-                            snackbarHostState.showSnackbar("Timesheet approved")
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Approve Full Timesheet")
-                }
-            } else if (anyUnapproved) {
-                Button(
-                    onClick = {
-                        viewModel.rejectTimesheet(submitterId, weekStart)
-                        coroutineScope.launch {
-                            snackbarHostState.showSnackbar("Timesheet rejected")
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) {
-                    Text("Reject Timesheet")
-                }
-            }
         }
     }
 }

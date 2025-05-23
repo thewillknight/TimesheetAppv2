@@ -113,6 +113,22 @@ fun TimesheetSummaryScreen(
             Text("Total Hours: $totalHours", style = MaterialTheme.typography.bodyMedium)
             Spacer(modifier = Modifier.height(16.dp))
 
+            if (isEditable) {
+                Button(
+                    onClick = {
+                        viewModel.submitTimesheet(weekStart)
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar("Timesheet submitted for approval")
+                        }
+                    },
+                    enabled = totalHours >= 37.5,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Submit Timesheet")
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+
             Text("Entries", style = MaterialTheme.typography.titleMedium)
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -132,22 +148,6 @@ fun TimesheetSummaryScreen(
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                     }
-                }
-            }
-
-            if (isEditable) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Button(
-                    onClick = {
-                        viewModel.submitTimesheet(weekStart)
-                        coroutineScope.launch {
-                            snackbarHostState.showSnackbar("Timesheet submitted for approval")
-                        }
-                    },
-                    enabled = totalHours >= 37.5,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Submit Timesheet")
                 }
             }
         }
