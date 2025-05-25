@@ -10,9 +10,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.timesheetapp.R
 import com.example.timesheetapp.data.model.Timesheet
 import com.example.timesheetapp.viewmodel.ApproveViewModel
 
@@ -24,6 +26,7 @@ fun SubmitterTimesheetsScreen(
     viewModel: ApproveViewModel = viewModel()
 ) {
     val timesheets by viewModel.selectedSubmitterTimesheets.collectAsState()
+    val titleText = stringResource(id = R.string.submitter_timesheets_title, submitterName)
 
     LaunchedEffect(submitterId) {
         viewModel.loadSubmitterTimesheets(submitterId)
@@ -36,7 +39,7 @@ fun SubmitterTimesheetsScreen(
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
             Text(
-                text = "$submitterName's Timesheets",
+                text = titleText,
                 style = MaterialTheme.typography.titleLarge
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -55,6 +58,9 @@ fun SubmitterTimesheetsScreen(
 
 @Composable
 fun TimesheetListItem(timesheet: Timesheet, onClick: () -> Unit) {
+    val weekLabel = stringResource(id = R.string.week_label, timesheet.weekStart)
+    val statusLabel = stringResource(id = R.string.status_label, timesheet.status.replaceFirstChar { it.uppercaseChar() })
+
     val statusColor = when (timesheet.status.lowercase()) {
         "draft" -> Color(0xFFFFCDD2)
         "pending" -> Color(0xFFFFF9C4)
@@ -75,8 +81,8 @@ fun TimesheetListItem(timesheet: Timesheet, onClick: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
-                Text("Week: ${timesheet.weekStart}", style = MaterialTheme.typography.bodyLarge)
-                Text("Status: ${timesheet.status.replaceFirstChar { it.uppercaseChar() }}")
+                Text(weekLabel, style = MaterialTheme.typography.bodyLarge)
+                Text(statusLabel)
             }
         }
     }

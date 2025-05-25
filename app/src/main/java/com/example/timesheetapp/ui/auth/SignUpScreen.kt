@@ -7,6 +7,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -25,10 +26,20 @@ fun SignUpScreen(navController: NavController, authViewModel: AuthViewModel = vi
     val authState by authViewModel.authState.collectAsState()
     var errorMessage by remember { mutableStateOf("") }
 
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .padding(WindowInsets.systemBars.asPaddingValues())
-        .padding(horizontal = 16.dp, vertical = 8.dp)
+    val titleText = stringResource(R.string.sign_up_screen_title)
+    val firstNameHint = stringResource(R.string.first_name_field_hint_text)
+    val lastNameHint = stringResource(R.string.last_name_field_hint_text)
+    val emailHint = stringResource(R.string.email_field_hint_text)
+    val passwordHint = stringResource(R.string.password_field_hint_text)
+    val createAccountText = stringResource(R.string.create_account_button_text)
+    val alreadyHaveAccountText = stringResource(R.string.already_have_account_text)
+    val emptyFieldsError = stringResource(R.string.signup_empty_fields_error)
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(WindowInsets.systemBars.asPaddingValues())
+            .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
         Image(
             painter = painterResource(id = R.drawable.capula_logo),
@@ -39,64 +50,81 @@ fun SignUpScreen(navController: NavController, authViewModel: AuthViewModel = vi
                 .padding(vertical = 16.dp),
             contentScale = ContentScale.Fit
         )
-        Text("Sign Up", style = MaterialTheme.typography.headlineMedium)
+
+        Text(text = titleText, style = MaterialTheme.typography.headlineMedium)
 
         OutlinedTextField(
             value = firstName,
             onValueChange = { firstName = it },
-            label = { Text("First Name") },
-            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+            label = { Text(firstNameHint) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp)
         )
 
         OutlinedTextField(
             value = lastName,
             onValueChange = { lastName = it },
-            label = { Text("Last Name") },
-            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+            label = { Text(lastNameHint) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp)
         )
 
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
-            label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+            label = { Text(emailHint) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp)
         )
+
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
-            label = { Text("Password") },
+            label = { Text(passwordHint) },
             visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp)
         )
 
         Button(
             onClick = {
-                if (firstName.isBlank() || lastName.isBlank() || email.isBlank() || password.isBlank()) {
-                    errorMessage = "Please fill in all fields."
+                errorMessage = if (firstName.isBlank() || lastName.isBlank() || email.isBlank() || password.isBlank()) {
+                    emptyFieldsError
                 } else {
-                    errorMessage = ""
                     authViewModel.signUp(firstName, lastName, email, password)
+                    ""
                 }
             },
-            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp)
         ) {
-            Text("Create Account")
+            Text(createAccountText)
         }
 
         if (errorMessage.isNotEmpty()) {
             Text(errorMessage, color = MaterialTheme.colorScheme.error)
         }
 
-        TextButton(onClick = {
-            authViewModel.resetState()
-            navController.navigate(Screen.Login.route)
-        }) {
-            Text("Already have an account? Log in")
+        TextButton(
+            onClick = {
+                authViewModel.resetState()
+                navController.navigate(Screen.Login.route)
+            }
+        ) {
+            Text(alreadyHaveAccountText)
         }
 
         when (authState) {
             is AuthResult.Loading -> CircularProgressIndicator()
-            is AuthResult.Error -> Text((authState as AuthResult.Error).message, color = MaterialTheme.colorScheme.error)
+            is AuthResult.Error -> Text(
+                (authState as AuthResult.Error).message,
+                color = MaterialTheme.colorScheme.error
+            )
             is AuthResult.Success -> {
                 LaunchedEffect(Unit) {
                     navController.navigate(Screen.Main.route) {

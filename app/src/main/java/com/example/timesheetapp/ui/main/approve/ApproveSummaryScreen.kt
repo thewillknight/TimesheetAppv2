@@ -7,8 +7,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.timesheetapp.R
 import com.example.timesheetapp.viewmodel.ApproveViewModel
 import com.example.timesheetapp.data.model.TimesheetEntry
 import kotlinx.coroutines.launch
@@ -27,7 +29,19 @@ fun ApproveSummaryScreen(
         viewModel.loadTimesheetEntries(submitterId, weekStart)
     }
 
-    val totalHours = entries.sumOf { it.dailyHours.sum() }
+    val weekOfLabel = stringResource(id = R.string.week_of, weekStart)
+    val totalHoursLabel = stringResource(id = R.string.total_hours, entries.sumOf { it.dailyHours.sum() })
+    val approveFullTimesheetLabel = stringResource(id = R.string.approve_full_timesheet)
+    val rejectTimesheetLabel = stringResource(id = R.string.reject_timesheet)
+    val timesheetApprovedMsg = stringResource(id = R.string.timesheet_approved_snackbar)
+    val timesheetRejectedMsg = stringResource(id = R.string.timesheet_rejected_snackbar)
+    //val projectLabel = stringResource(id = R.string.project_label_inline, "")
+    //val subcategoryLabel = stringResource(id = R.string.subcategory_label_inline, "")
+    //val hoursLabel = stringResource(id = R.string.hours_label_inline, "")
+    //val approvedLabel = stringResource(id = R.string.approved_label, "")
+    val approveEntryLabel = stringResource(id = R.string.approve_entry)
+    val entryApprovedMsg = stringResource(id = R.string.entry_approved_snackbar)
+
     val allApproved = entries.all { it.approved }
     val anyUnapproved = entries.any { !it.approved }
 
@@ -39,9 +53,9 @@ fun ApproveSummaryScreen(
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            Text("Week of $weekStart", style = MaterialTheme.typography.titleLarge)
+            Text(weekOfLabel, style = MaterialTheme.typography.titleLarge)
             Spacer(modifier = Modifier.height(8.dp))
-            Text("Total Hours: $totalHours")
+            Text(totalHoursLabel)
             Spacer(modifier = Modifier.height(16.dp))
 
             if (allApproved) {
@@ -49,12 +63,12 @@ fun ApproveSummaryScreen(
                     onClick = {
                         viewModel.approveTimesheet(submitterId, weekStart)
                         coroutineScope.launch {
-                            snackbarHostState.showSnackbar("Timesheet approved")
+                            snackbarHostState.showSnackbar(timesheetApprovedMsg)
                         }
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Approve Full Timesheet")
+                    Text(approveFullTimesheetLabel)
                 }
                 Spacer(modifier = Modifier.height(16.dp))
             } else if (anyUnapproved) {
@@ -62,13 +76,13 @@ fun ApproveSummaryScreen(
                     onClick = {
                         viewModel.rejectTimesheet(submitterId, weekStart)
                         coroutineScope.launch {
-                            snackbarHostState.showSnackbar("Timesheet rejected")
+                            snackbarHostState.showSnackbar(timesheetRejectedMsg)
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                 ) {
-                    Text("Reject Timesheet")
+                    Text(rejectTimesheetLabel)
                 }
                 Spacer(modifier = Modifier.height(16.dp))
             }
@@ -81,27 +95,28 @@ fun ApproveSummaryScreen(
                             .padding(vertical = 4.dp)
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
-                            Text("Project: ${entry.projectId}")
-                            Text("Subcategory: ${entry.subcategoryId}")
-                            Text("Hours: ${entry.dailyHours.joinToString()}")
-                            Text("Approved: ${if (entry.approved) "✅" else "❌"}")
+                            Text(stringResource(id = R.string.project_label_inline, entry.projectId))
+                            Text(stringResource(id = R.string.subcategory_label_inline, entry.subcategoryId))
+                            Text(stringResource(id = R.string.hours_label_inline, entry.dailyHours.joinToString()))
+                            Text(stringResource(id = R.string.approved_label, if (entry.approved) "✅" else "❌"))
                             if (!entry.approved) {
                                 Button(
                                     onClick = {
                                         viewModel.approveEntry(submitterId, weekStart, entry.id)
                                         coroutineScope.launch {
-                                            snackbarHostState.showSnackbar("Entry approved")
+                                            snackbarHostState.showSnackbar(entryApprovedMsg)
                                         }
                                     },
                                     modifier = Modifier.padding(top = 8.dp)
                                 ) {
-                                    Text("Approve Entry")
+                                    Text(approveEntryLabel)
                                 }
                             }
                         }
                     }
                 }
             }
+
             Spacer(modifier = Modifier.height(16.dp))
         }
     }

@@ -5,8 +5,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.timesheetapp.R
 import com.example.timesheetapp.ui.components.SearchableDropdownMenuBox
 import com.example.timesheetapp.viewmodel.AdminViewModel
 
@@ -20,18 +22,22 @@ fun DelegationSection(viewModel: AdminViewModel = viewModel()) {
 
     var searchApprover by remember { mutableStateOf("") }
 
+    val assignApproversTitle = stringResource(id = R.string.assign_approvers_title)
+    val selectSubmitterLabel = stringResource(id = R.string.select_submitter_label)
+    val searchApproversLabel = stringResource(id = R.string.search_approvers_label)
+
     LaunchedEffect(Unit) {
         viewModel.loadAllUsers()
     }
 
     Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
-        Text("Assign Approvers", style = MaterialTheme.typography.titleMedium)
+        Text(assignApproversTitle, style = MaterialTheme.typography.titleMedium)
 
         Spacer(modifier = Modifier.height(12.dp))
 
         // Submitter Selection
         SearchableDropdownMenuBox(
-            label = "Select Submitter",
+            label = selectSubmitterLabel,
             options = users,
             selectedId = selectedSubmitterId,
             getId = { it.id },
@@ -45,15 +51,19 @@ fun DelegationSection(viewModel: AdminViewModel = viewModel()) {
         Spacer(modifier = Modifier.height(16.dp))
 
         if (selectedSubmitter != null) {
-            Text("Select approvers for ${viewModel.getFullName(selectedSubmitter.user)}")
+            val selectApproversText = stringResource(
+                id = R.string.select_approvers_label,
+                viewModel.getFullName(selectedSubmitter.user)
+            )
+
+            Text(selectApproversText)
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Search field for filtering potential approvers
             OutlinedTextField(
                 value = searchApprover,
                 onValueChange = { searchApprover = it },
-                label = { Text("Search Approvers") },
+                label = { Text(searchApproversLabel) },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -69,7 +79,6 @@ fun DelegationSection(viewModel: AdminViewModel = viewModel()) {
             Column {
                 filteredApprovers.forEach { potentialApprover ->
                     val isChecked = currentApprovers.contains(potentialApprover.id)
-                    println("Checkbox for ${potentialApprover.id} = $isChecked")
 
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -91,7 +100,6 @@ fun DelegationSection(viewModel: AdminViewModel = viewModel()) {
                                         submitterId = selectedSubmitterId!!
                                     )
                                 }
-                                // Reload current approvers
                                 viewModel.loadApproversForSubmitter(selectedSubmitterId!!)
                             }
                         )

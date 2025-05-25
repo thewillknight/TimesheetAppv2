@@ -2,11 +2,7 @@ package com.example.timesheetapp.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -16,7 +12,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.example.timesheetapp.R
 
 @Composable
 fun <T> SearchableDropdownMenuBox(
@@ -39,13 +37,14 @@ fun <T> SearchableDropdownMenuBox(
         emptyList()
     }
 
+    val toggleDropdownDesc = stringResource(id = R.string.dropdown_toggle)
+    val noResultsText = stringResource(id = R.string.no_results)
+
     Box(modifier = Modifier.fillMaxWidth()) {
         Column {
             OutlinedTextField(
                 value = if (showQuery) query else selectedLabel,
-                onValueChange = {
-                    query = it
-                },
+                onValueChange = { query = it },
                 label = { Text(label) },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -57,7 +56,7 @@ fun <T> SearchableDropdownMenuBox(
                     }) {
                         Icon(
                             imageVector = if (isFocused) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
-                            contentDescription = "Toggle dropdown"
+                            contentDescription = toggleDropdownDesc
                         )
                     }
                 },
@@ -90,7 +89,7 @@ fun <T> SearchableDropdownMenuBox(
 
             if (isFocused && query.isNotBlank() && filteredOptions.isEmpty()) {
                 Text(
-                    text = "No results",
+                    text = noResultsText,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(12.dp),
@@ -101,5 +100,3 @@ fun <T> SearchableDropdownMenuBox(
         }
     }
 }
-
-

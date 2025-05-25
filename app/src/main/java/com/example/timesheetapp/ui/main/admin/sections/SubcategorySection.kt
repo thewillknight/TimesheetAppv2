@@ -5,11 +5,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.timesheetapp.R
 import com.example.timesheetapp.viewmodel.SubcategoryViewModel
 
 @Composable
@@ -23,6 +24,14 @@ fun SubcategorySection(viewModel: SubcategoryViewModel = viewModel()) {
 
     val snackbarHostState = remember { SnackbarHostState() }
 
+    val title = stringResource(id = R.string.add_new_subcategory_title)
+    val codeLabel = stringResource(id = R.string.code_label)
+    val descriptionLabel = stringResource(id = R.string.description_label)
+    val addButton = stringResource(id = R.string.add_subcategory_button)
+    val existingTitle = stringResource(id = R.string.existing_subcategories_title)
+    val context = LocalContext.current
+
+
     LaunchedEffect(Unit) {
         viewModel.loadSubcategories()
     }
@@ -35,23 +44,23 @@ fun SubcategorySection(viewModel: SubcategoryViewModel = viewModel()) {
         }
     }
 
-    Scaffold( modifier = Modifier,
+    Scaffold(
+        modifier = Modifier,
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-               // .padding(paddingValues = padding)
                 .padding(horizontal = 16.dp)
         ) {
-            Text("Add New Subcategory", style = MaterialTheme.typography.titleMedium)
+            Text(title, style = MaterialTheme.typography.titleMedium)
 
             Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedTextField(
                 value = newCode,
                 onValueChange = { newCode = it },
-                label = { Text("Code (e.g. TRAV)") },
+                label = { Text(codeLabel) },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -60,7 +69,7 @@ fun SubcategorySection(viewModel: SubcategoryViewModel = viewModel()) {
             OutlinedTextField(
                 value = newDescription,
                 onValueChange = { newDescription = it },
-                label = { Text("Description") },
+                label = { Text(descriptionLabel) },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -72,31 +81,32 @@ fun SubcategorySection(viewModel: SubcategoryViewModel = viewModel()) {
                     val desc = newDescription.trim()
 
                     if (subcategories.any { it.code.equals(code, ignoreCase = true) }) {
-                        snackbarMessage = "Subcategory code \"$code\" already exists."
+                        snackbarMessage = context.getString(R.string.subcategory_exists_message, code)
                     } else {
                         viewModel.addSubcategory(code, desc) {
                             newCode = ""
                             newDescription = ""
-                            snackbarMessage = "Subcategory \"$code\" added."
+                            snackbarMessage = context.getString(R.string.subcategory_added_message, code)
                         }
                     }
+
                 },
                 enabled = newCode.isNotBlank() && newDescription.isNotBlank() && !isLoading,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
             ) {
-                Text("Add Subcategory")
+                Text(addButton)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text("Existing Subcategories", style = MaterialTheme.typography.titleMedium)
+            Text(existingTitle, style = MaterialTheme.typography.titleMedium)
             Spacer(modifier = Modifier.height(8.dp))
 
             LazyColumn {
                 items(subcategories) { sub ->
-                    Text("• ${sub.code}: ${sub.description}")
+                    Text(stringResource(id = R.string.subcategory_list_item, sub.code, sub.description))
                 }
             }
         }

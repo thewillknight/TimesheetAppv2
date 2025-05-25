@@ -8,6 +8,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -15,6 +16,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.timesheetapp.R
 import com.example.timesheetapp.ui.components.AppTopBar
 import com.google.firebase.auth.FirebaseAuth
 import com.example.timesheetapp.navigation.BottomNavItem
@@ -35,17 +37,20 @@ fun MainScreen(navController: NavController, userViewModel: UserViewModel = view
     val navHostController = rememberNavController()
     val currentRoute = navHostController.currentBackStackEntryAsState().value?.destination?.route
 
+    val submitTitle = stringResource(id = R.string.nav_submit)
+    val approveTitle = stringResource(id = R.string.nav_approve)
+    val adminTitle = stringResource(id = R.string.nav_admin)
+
     LaunchedEffect(Unit) {
         userViewModel.loadUserData()
         userViewModel.checkIfUserIsApprover()
     }
 
     val tabs = buildList {
-        add(BottomNavItem.Submit)
-        if (isApprover) add(BottomNavItem.Approve)
-        if (user?.admin == true) add(BottomNavItem.Admin)
+        add(BottomNavItem(submitTitle, "submit", Icons.Filled.Check))
+        if (isApprover) add(BottomNavItem(approveTitle, "approve", Icons.Filled.ThumbUp))
+        if (user?.admin == true) add(BottomNavItem(adminTitle, "admin", Icons.Filled.Settings))
     }
-
 
     Scaffold(
         topBar = {
@@ -91,4 +96,3 @@ fun MainScreen(navController: NavController, userViewModel: UserViewModel = view
         }
     }
 }
-

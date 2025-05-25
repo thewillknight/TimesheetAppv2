@@ -1,3 +1,112 @@
 <resources>
     <string name="app_name">TimesheetApp</string>
+
+     <!-- Login Screen -->
+    <string name="login_screen_title">Login</string>
+    <string name="email_field_hint_text">Email</string>
+    <string name="password_field_hint_text">Password</string>
+    <string name="login_button_text">Log In</string>
+    <string name="sign_up_button_text">Don\'t have an account? Sign up</string>
+    <string name="empty_email_or_password_error">Please enter both email and password.</string>
+
+     <!-- Sign Up Screen -->
+    <string name="sign_up_screen_title">Sign Up</string>
+    <string name="first_name_field_hint_text">First Name</string>
+    <string name="last_name_field_hint_text">Last Name</string>
+    <string name="create_account_button_text">Create Account</string>
+    <string name="already_have_account_text">Already have an account? Log in</string>
+    <string name="signup_empty_fields_error">Please fill in all fields.</string>
+
+    <!-- Bottom Navigation Items -->
+    <string name="nav_submit">Submit</string>
+    <string name="nav_approve">Approve</string>
+    <string name="nav_admin">Admin</string>
+
+    <!-- Submit Screen -->
+    <string name="add_timesheet_content_description">Add Timesheet</string>
+    <string name="your_timesheets_title">Your Timesheets</string>
+    <string name="week_label">Week: %1$s</string>
+    <string name="status_label">Status: %1$s</string>
+    <string name="status_rejected">Rejected – please revise and resubmit</string>
+
+    <!-- Entry Detail Bottom Sheet -->
+    <string name="edit_entry_title">Edit Entry</string>
+    <string name="new_entry_title">New Entry</string>
+    <string name="project_label">Project</string>
+    <string name="subcategory_label">Subcategory</string>
+    <string name="hours_per_day_label">Hours per day</string>
+    <string name="save_entry_button">Save Entry</string>
+    <string name="hours_display_format">%1$s: %2$.1f hrs</string>
+
+    <!-- Approve Screen -->
+    <string name="approve_screen_title">Timesheets to Approve</string>
+    <string name="no_submitters_message">You have no delegated submitters.</string>
+    <string name="timesheets_pending">⚠️ Outstanding timesheets need approval</string>
+    <string name="timesheets_approved">✅ All timesheets approved</string>
+
+    <!-- Approve Summary Screen -->
+    <string name="week_of">Week of %1$s</string>
+    <string name="total_hours">Total Hours: %1$.1f</string>
+    <string name="approve_full_timesheet">Approve Full Timesheet</string>
+    <string name="reject_timesheet">Reject Timesheet</string>
+    <string name="timesheet_approved_snackbar">Timesheet approved</string>
+    <string name="timesheet_rejected_snackbar">Timesheet rejected</string>
+    <string name="project_label_inline">Project: %1$s</string>
+    <string name="subcategory_label_inline">Subcategory: %1$s</string>
+    <string name="hours_label_inline">Hours: %1$s</string>
+    <string name="approved_label">Approved: %1$s</string>
+    <string name="approve_entry">Approve Entry</string>
+    <string name="entry_approved_snackbar">Entry approved</string>
+
+    <!-- Submitter Timesheets Screen -->
+    <string name="submitter_timesheets_title">%1$s\'s Timesheets</string>
+    <!-- string name="week_label">Week: %1$s</string -->
+    <!-- string name="status_label">Status: %1$s</string -->
+
+    <!-- Admin Screen -->
+    <string name="tab_delegation">Delegation</string>
+    <string name="tab_projects">Projects</string>
+    <string name="tab_subcategories">Subcategories</string>
+
+    <!-- Delegation Section -->
+    <string name="assign_approvers_title">Assign Approvers</string>
+    <string name="select_submitter_label">Select Submitter</string>
+    <string name="select_approvers_label">Select approvers for %1$s</string>
+    <string name="search_approvers_label">Search Approvers</string>
+
+    <!-- Project Section -->
+    <string name="add_new_project_title">Add New Project</string>
+    <string name="project_name_label">Project Name</string>
+    <string name="add_project_button">Add Project</string>
+    <string name="project_added_message">Project added.</string>
+    <string name="existing_projects_title">Existing Projects</string>
+    <string name="project_list_item">• %1$s: %2$s</string>
+
+    <!-- Subcategory Section -->
+    <string name="add_new_subcategory_title">Add New Subcategory</string>
+    <string name="code_label">Code (e.g. TRAV)</string>
+    <string name="description_label">Description</string>
+    <string name="add_subcategory_button">Add Subcategory</string>
+    <string name="subcategory_exists_message">Subcategory code "%1$s" already exists.</string>
+    <string name="subcategory_added_message">Subcategory "%1$s" added.</string>
+    <string name="existing_subcategories_title">Existing Subcategories</string>
+    <string name="subcategory_list_item">• %1$s: %2$s</string>
+
+    <!-- Top App Bar -->
+    <string name="content_description_logo">Company Logo</string>
+    <string name="content_description_logout">Logout</string>
+
+    <!-- Top Bar Titles -->
+    <string name="title_timesheet">Timesheet</string>
+    <string name="title_submit">Submit</string>
+    <string name="title_approve">Approve</string>
+    <string name="title_admin">Admin</string>
+    <string name="title_submitter_timesheets">Submitter Timesheets</string>
+    <string name="title_approve_summary">Approve Summary</string>
+    <string name="title_timesheet_summary">Timesheet Summary</string>
+
+    <!-- Dropdown Menu Box -->
+    <string name="dropdown_toggle">Toggle dropdown</string>
+    <string name="no_results">No results</string>
+
 </resources>

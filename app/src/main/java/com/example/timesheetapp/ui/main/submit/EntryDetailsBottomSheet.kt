@@ -6,11 +6,15 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.timesheetapp.R
 import com.example.timesheetapp.data.model.TimesheetEntry
 import com.example.timesheetapp.viewmodel.TimesheetViewModel
 import kotlinx.coroutines.launch
+import java.time.DayOfWeek
+import java.time.format.TextStyle
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -26,7 +30,17 @@ fun EntryDetailBottomSheet(
     var selectedSubcategoryCode by remember { mutableStateOf(existingEntry?.subcategoryId ?: "") }
     var dailyHours by remember { mutableStateOf(existingEntry?.dailyHours ?: List(7) { 0.0 }) }
 
-    val daysOfWeek = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+    val editEntryTitle = stringResource(id = R.string.edit_entry_title)
+    val newEntryTitle = stringResource(id = R.string.new_entry_title)
+    val projectLabel = stringResource(id = R.string.project_label)
+    val subcategoryLabel = stringResource(id = R.string.subcategory_label)
+    val hoursPerDayLabel = stringResource(id = R.string.hours_per_day_label)
+    val saveEntryButton = stringResource(id = R.string.save_entry_button)
+    val hoursDisplayFormat = stringResource(id = R.string.hours_display_format)
+
+    val daysOfWeek = DayOfWeek.entries.map {
+        it.getDisplayName(TextStyle.SHORT, Locale.getDefault())
+    }
 
     val projects by viewModel.projects.collectAsState()
     val subcategories by viewModel.subcategories.collectAsState()
@@ -47,7 +61,7 @@ fun EntryDetailBottomSheet(
             .verticalScroll(rememberScrollState())
     ) {
         Text(
-            text = if (existingEntry != null) "Edit Entry" else "New Entry",
+            text = if (existingEntry != null) editEntryTitle else newEntryTitle,
             style = MaterialTheme.typography.titleMedium
         )
 
@@ -62,7 +76,7 @@ fun EntryDetailBottomSheet(
                 value = projects.find { it.id == selectedProjectId }?.let { "${it.id}: ${it.name}" } ?: "",
                 onValueChange = {},
                 readOnly = true,
-                label = { Text("Project") },
+                label = { Text(projectLabel) },
                 modifier = Modifier.menuAnchor().fillMaxWidth(),
                 enabled = isEditable
             )
@@ -93,7 +107,7 @@ fun EntryDetailBottomSheet(
                 value = subcategories.find { it.code == selectedSubcategoryCode }?.let { "${it.code}: ${it.description}" } ?: "",
                 onValueChange = {},
                 readOnly = true,
-                label = { Text("Subcategory") },
+                label = { Text(subcategoryLabel) },
                 modifier = Modifier.menuAnchor().fillMaxWidth(),
                 enabled = isEditable
             )
@@ -114,10 +128,10 @@ fun EntryDetailBottomSheet(
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-        Text("Hours per day", style = MaterialTheme.typography.titleSmall)
+        Text(hoursPerDayLabel, style = MaterialTheme.typography.titleSmall)
 
         daysOfWeek.forEachIndexed { index, day ->
-            Text("$day: ${dailyHours[index]} hrs")
+            Text(String.format(hoursDisplayFormat, day, dailyHours[index]))
             Slider(
                 value = dailyHours[index].toFloat(),
                 onValueChange = { newValue ->
@@ -149,8 +163,9 @@ fun EntryDetailBottomSheet(
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Save Entry")
+                Text(saveEntryButton)
             }
         }
     }
 }
+

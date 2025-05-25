@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.timesheetapp.R
@@ -28,7 +29,7 @@ fun AppTopBar(currentRoute: String?, navController: NavController) {
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.capula_short_logo),
-                    contentDescription = "Company Logo",
+                    contentDescription = stringResource(R.string.content_description_logo),
                     modifier = Modifier.size(32.dp)
                 )
 
@@ -50,7 +51,7 @@ fun AppTopBar(currentRoute: String?, navController: NavController) {
                 }) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.Logout,
-                        contentDescription = "Logout"
+                        contentDescription = stringResource(R.string.content_description_logout)
                     )
                 }
             }
@@ -58,15 +59,16 @@ fun AppTopBar(currentRoute: String?, navController: NavController) {
     )
 }
 
+@Composable
 private fun getTitleFromRoute(route: String?): String {
     return when {
-        route == null -> "Timesheet"
-        route.startsWith("submitterTimesheets") -> "Submitter Timesheets"
-        route.startsWith("approveSummary") -> "Approve Summary"
-        route.startsWith("timesheetSummary") -> "Timesheet Summary"
-        route == "submit" -> "Submit"
-        route == "approve" -> "Approve"
-        route == "admin" -> "Admin"
-        else -> "Timesheet"
+        route == null -> stringResource(R.string.title_timesheet)
+        route.startsWith("submitterTimesheets") -> stringResource(R.string.title_submitter_timesheets)
+        route.startsWith("approveSummary") -> stringResource(R.string.title_approve_summary)
+        route.startsWith("timesheetSummary") -> stringResource(R.string.title_timesheet_summary)
+        route == "submit" -> stringResource(R.string.title_submit)
+        route == "approve" -> stringResource(R.string.title_approve)
+        route == "admin" -> stringResource(R.string.title_admin)
+        else -> stringResource(R.string.title_timesheet)
     }
 }

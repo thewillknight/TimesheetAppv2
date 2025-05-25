@@ -12,9 +12,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.timesheetapp.R
 import com.example.timesheetapp.data.model.Timesheet
 import com.example.timesheetapp.viewmodel.TimesheetViewModel
 import java.util.*
@@ -26,6 +28,9 @@ fun SubmitScreen(
 ) {
     val timesheets by viewModel.timesheets.collectAsState()
     var newlyCreatedWeek by remember { mutableStateOf<String?>(null) }
+
+    val addTimesheetContentDescription = stringResource(id = R.string.add_timesheet_content_description)
+    val yourTimesheetsTitle = stringResource(id = R.string.your_timesheets_title)
 
     LaunchedEffect(Unit) {
         viewModel.loadTimesheets()
@@ -48,7 +53,7 @@ fun SubmitScreen(
                 viewModel.addTimesheetForNextWeek()
                 newlyCreatedWeek = viewModel.computeNextWeekStart()
             }) {
-                Icon(Icons.Default.Add, contentDescription = "Add Timesheet")
+                Icon(Icons.Default.Add, contentDescription = addTimesheetContentDescription)
             }
         }
     ) { padding ->
@@ -57,7 +62,7 @@ fun SubmitScreen(
                 .fillMaxSize()
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-            Text("Your Timesheets", style = MaterialTheme.typography.titleLarge)
+            Text(yourTimesheetsTitle, style = MaterialTheme.typography.titleLarge)
 
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -78,15 +83,18 @@ fun SubmitScreen(
 @Composable
 fun TimesheetListItem(timesheet: Timesheet, onClick: () -> Unit) {
     val statusColor = when (timesheet.status.lowercase(Locale.getDefault())) {
-        "draft" -> Color(0xFFFFCDD2)
-        "rejected" -> Color(0xFFFFCDD2)
+        "draft", "rejected" -> Color(0xFFFFCDD2)
         "pending" -> Color(0xFFFFF9C4)
         "approved" -> Color(0xFFC8E6C9)
         else -> Color.LightGray
     }
 
+    val statusRejectedText = stringResource(id = R.string.status_rejected)
+    val statusLabelTemplate = stringResource(id = R.string.status_label)
+    val weekLabelTemplate = stringResource(id = R.string.week_label)
+
     val statusText = when (timesheet.status.lowercase()) {
-        "rejected" -> "Rejected – please revise and resubmit"
+        "rejected" -> statusRejectedText
         else -> timesheet.status.replaceFirstChar { it.uppercaseChar() }
     }
 
@@ -103,8 +111,8 @@ fun TimesheetListItem(timesheet: Timesheet, onClick: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
-                Text("Week: ${timesheet.weekStart}", style = MaterialTheme.typography.bodyLarge)
-                Text("Status: $statusText")
+                Text(String.format(weekLabelTemplate, timesheet.weekStart), style = MaterialTheme.typography.bodyLarge)
+                Text(String.format(statusLabelTemplate, statusText))
             }
         }
     }
